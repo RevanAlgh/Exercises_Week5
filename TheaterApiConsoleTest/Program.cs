@@ -26,28 +26,28 @@ namespace TheaterApiConsoleTest
             try
             {
                 // Test GET Movie by ID
-                await GetMovie(3);
+                await GetMovie(15);
 
                 // Test POST Create Movie
                 await CreateMovie();
 
                 // Test PUT Update Movie
-                await UpdateMovie(3);
+                await UpdateMovie(15);
 
                 // Test DELETE Movie by ID
-                await DeleteMovie(3);
+                await DeleteMovie(15);
 
                 // Test GET Author by ID
-                await GetAuthor(3);
+                await GetAuthor(12);
 
                 // Test POST Create Author
                 await CreateAuthor();
 
                 // Test PUT Update Author
-                await UpdateAuthor(3);
+                await UpdateAuthor(12);
 
                 // Test DELETE Author by ID
-                await DeleteAuthor(3);
+                await DeleteAuthor(12);
             }
             catch (HttpRequestException e)
             {
@@ -59,7 +59,7 @@ namespace TheaterApiConsoleTest
             }
 
             // Pause to view results
-            Console.WriteLine("Press Enter to exit...");
+            Console.WriteLine("Enter to exit...");
             Console.ReadLine();
         }
 
@@ -85,13 +85,13 @@ namespace TheaterApiConsoleTest
         {
             var newMovie = new CreateMovieDto
             {
-                MovieTitle = "Born a singer",
-                ImdbRating = 8.0,
+                MovieTitle = "New Movie",
+                ImdbRating = 8.0f,
                 YearReleased = 2024,
                 Budget = 100,
                 BoxOffice = 500,
                 Language = "English",
-                AuthorID = 1
+                AuthorID = 10
             };
 
             try
@@ -115,12 +115,12 @@ namespace TheaterApiConsoleTest
             var updatedMovie = new UpdateMovieDto
             {
                 MovieTitle = "Updated Movie",
-                ImdbRating = 9.0,
-                YearReleased = 2023,
-                Budget = 150,
-                BoxOffice = 600,
-                Language = "Spanish",
-                AuthorID = 1
+                ImdbRating = 8.0f,
+                YearReleased = 2004,
+                Budget = 100,
+                BoxOffice = 500,
+                Language = "English",
+                AuthorID = 10
             };
 
             try
@@ -240,9 +240,13 @@ namespace TheaterApiConsoleTest
         }
     }
 
-    public class MovieDto
+    public class MovieDto : UpdateMovieDto
     {
-        public int MovieID { get; set; }
+        public List<MovieAuthor> MovieAuthors { get; set; }
+    }
+
+    public class CreateMovieDto
+    {
         public string MovieTitle { get; set; }
         public float ImdbRating { get; set; }
         public int YearReleased { get; set; }
@@ -250,45 +254,35 @@ namespace TheaterApiConsoleTest
         public decimal BoxOffice { get; set; }
         public string Language { get; set; }
         public int AuthorID { get; set; }
-        public List<string> MovieAuthors { get; set; }
     }
 
-    public class CreateMovieDto
+    public class UpdateMovieDto : CreateMovieDto
     {
-        public string MovieTitle { get; set; }
-        public double ImdbRating { get; set; }
-        public int YearReleased { get; set; }
-        public decimal Budget { get; set; }
-        public decimal BoxOffice { get; set; }
-        public string Language { get; set; }
-        public int AuthorID { get; set; }
+        public int MovieID { get; set; }
     }
 
-    public class UpdateMovieDto
+    public class AuthorDto : UpdateAuthorDto
     {
-        public string MovieTitle { get; set; }
-        public double ImdbRating { get; set; }
-        public int YearReleased { get; set; }
-        public decimal Budget { get; set; }
-        public decimal BoxOffice { get; set; }
-        public string Language { get; set; }
-        public int AuthorID { get; set; }
-    }
-
-    public class AuthorDto
-    {
-        public int AuthorID { get; set; }
-        public string AuthorName { get; set; }
-        public List<string> MovieAuthors { get; set; }
+        public List<MovieAuthor> MovieAuthors { get; set; }
     }
 
     public class CreateAuthorDto
     {
         public string AuthorName { get; set; }
+
     }
 
-    public class UpdateAuthorDto
+    public class UpdateAuthorDto : CreateAuthorDto
     {
-        public string AuthorName { get; set; }
+        public int AuthorID { get; set; }
+    }
+
+    public class MovieAuthor
+    {
+        public int MovieID { get; set; }
+        public MovieDto Movie { get; set; }
+
+        public int AuthorID { get; set; }
+        public AuthorDto Author { get; set; }
     }
 }
