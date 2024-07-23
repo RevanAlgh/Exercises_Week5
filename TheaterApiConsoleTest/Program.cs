@@ -19,55 +19,85 @@ namespace TheaterApiConsoleTest
         static async Task Main(string[] args)
         {
             // Set the base address of the API
-            client.BaseAddress = new Uri("http://localhost:5000/api/"); // Update to match your API base address
+            client.BaseAddress = new Uri("http://localhost:5000/");
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            try
+            // Authenticate and obtain token
+            var token = await Authenticate("Admin", "Asdf1234");
+
+            if (!string.IsNullOrEmpty(token))
             {
-                // Test GET Movie by ID
-                await GetMovie(15);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                // Test POST Create Movie
-                await CreateMovie();
+                try
+                {
+                    // Test GET Movie by ID
+                    await GetMovie(41);
 
-                // Test PUT Update Movie
-                await UpdateMovie(15);
+                    // Test POST Create Movie
+                    await CreateMovie();
 
-                // Test DELETE Movie by ID
-                await DeleteMovie(15);
+                    // Test PUT Update Movie
+                    await UpdateMovie(41);
 
-                // Test GET Author by ID
-                await GetAuthor(12);
+                    // Test DELETE Movie by ID
+                    await DeleteMovie(41);
 
-                // Test POST Create Author
-                await CreateAuthor();
+                    // Test GET Author by ID
+                    await GetAuthor(27);
 
-                // Test PUT Update Author
-                await UpdateAuthor(12);
+                    // Test POST Create Author
+                    await CreateAuthor();
 
-                // Test DELETE Author by ID
-                await DeleteAuthor(12);
+                    // Test PUT Update Author
+                    await UpdateAuthor(27);
+
+                    // Test DELETE Author by ID
+                    await DeleteAuthor(27);
+                }
+                catch (HttpRequestException e)
+                {
+                    Console.WriteLine($"Request error: {e.Message}");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Unexpected error: {e.Message}");
+                }
             }
-            catch (HttpRequestException e)
+            else
             {
-                Console.WriteLine($"Request error: {e.Message}");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Unexpected error: {e.Message}");
+                Console.WriteLine("Authentication failed.");
             }
 
             // Pause to view results
-            Console.WriteLine("Enter to exit...");
+            Console.WriteLine("Press Enter to exit...");
             Console.ReadLine();
+        }
+
+        // Authenticate Method
+        private static async Task<string> Authenticate(string username, string password)
+        {
+            var loginDto = new { Username = username, Password = password };
+            try
+            {
+                HttpResponseMessage response = await client.PostAsJsonAsync("login", loginDto);
+                response.EnsureSuccessStatusCode();
+                var authResponse = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+                return authResponse?.Token;
+            }
+            catch (HttpRequestException e)
+            {
+                Console.WriteLine($"Error authenticating: {e.Message}");
+                return null;
+            }
         }
 
         private static async Task GetMovie(int id)
         {
             try
             {
-                string url = $"movies/{id}";
+                string url = $"api/movies/{id}";
                 Console.WriteLine($"GET {url}");
                 HttpResponseMessage response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
@@ -96,7 +126,7 @@ namespace TheaterApiConsoleTest
 
             try
             {
-                string url = "movies";
+                string url = "api/movies";
                 Console.WriteLine($"POST {url}");
                 HttpResponseMessage response = await client.PostAsJsonAsync(url, newMovie);
                 response.EnsureSuccessStatusCode();
@@ -125,7 +155,7 @@ namespace TheaterApiConsoleTest
 
             try
             {
-                string url = $"movies/{id}";
+                string url = $"api/movies/{id}";
                 Console.WriteLine($"PUT {url}");
                 HttpResponseMessage response = await client.PutAsJsonAsync(url, updatedMovie);
                 response.EnsureSuccessStatusCode();
@@ -143,7 +173,7 @@ namespace TheaterApiConsoleTest
         {
             try
             {
-                string url = $"movies/{id}";
+                string url = $"api/movies/{id}";
                 Console.WriteLine($"DELETE {url}");
                 HttpResponseMessage response = await client.DeleteAsync(url);
                 response.EnsureSuccessStatusCode();
@@ -162,7 +192,7 @@ namespace TheaterApiConsoleTest
         {
             try
             {
-                string url = $"authors/{id}";
+                string url = $"api/authors/{id}";
                 Console.WriteLine($"GET {url}");
                 HttpResponseMessage response = await client.GetAsync(url);
                 response.EnsureSuccessStatusCode();
@@ -185,7 +215,7 @@ namespace TheaterApiConsoleTest
 
             try
             {
-                string url = "authors";
+                string url = "api/authors";
                 Console.WriteLine($"POST {url}");
                 HttpResponseMessage response = await client.PostAsJsonAsync(url, newAuthor);
                 response.EnsureSuccessStatusCode();
@@ -208,7 +238,7 @@ namespace TheaterApiConsoleTest
 
             try
             {
-                string url = $"authors/{id}";
+                string url = $"api/authors/{id}";
                 Console.WriteLine($"PUT {url}");
                 HttpResponseMessage response = await client.PutAsJsonAsync(url, updatedAuthor);
                 response.EnsureSuccessStatusCode();
@@ -226,7 +256,7 @@ namespace TheaterApiConsoleTest
         {
             try
             {
-                string url = $"authors/{id}";
+                string url = $"api/authors/{id}";
                 Console.WriteLine($"DELETE {url}");
                 HttpResponseMessage response = await client.DeleteAsync(url);
                 response.EnsureSuccessStatusCode();
@@ -284,5 +314,10 @@ namespace TheaterApiConsoleTest
 
         public int AuthorID { get; set; }
         public AuthorDto Author { get; set; }
+    }
+
+    public class AuthResponseDto
+    {
+        public string Token { get; set; }
     }
 }
